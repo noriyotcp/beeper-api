@@ -17,7 +17,7 @@ So please do everything at your own risk.
 
 ----
 
-#Setup & Run
+# Setup & Run
 
 Clone this repository and
 
@@ -27,5 +27,5 @@ php refresh-database
 php -S localhost:9090 public/index.php
 ```
 
-#License
+# License
 This is an open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT).
