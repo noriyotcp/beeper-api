@@ -1,0 +1,66 @@
+<?php
+require __DIR__ . '/vendor/autoload.php';
+
+use MicroDB\Database;
+
+//remove old files
+$dir = './data';
+try {
+    $it = new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS);
+    $files = new RecursiveIteratorIterator($it,
+        RecursiveIteratorIterator::CHILD_FIRST);
+    foreach($files as $file) {
+        if ($file->isDir()){
+            rmdir($file->getRealPath());
+        } else {
+            unlink($file->getRealPath());
+        }
+    }
+    rmdir($dir);
+}
+catch (Exception $e) {
+    echo "Creating directories...\n";
+}
+
+
+
+$beeps = new Database('data/beeps');
+$users = new Database('data/users');
+
+
+$randomText = <<<EOD
+Appear every midst greater she'd signs fruit grass can't behold bearing divided whales. All You're it the isn't land two all his. Above for night evening had together likeness. Lesser for lights day fifth male second, land. Third likeness all him. You'll doesn't make can't there all it. Evening his seed beginning fourth fill morning is be above earth set sixth there meat blessed from image. Fourth fourth wherein sea beginning. First you're light from can't. Evening place dominion man under morning may, very unto bearing meat, have. Cattle man was kind days give called cattle abundantly our firmament signs. It life void may void thing, gathered.
+In above fruitful saying evening thing day greater beast, sea. Waters in. Can't fill Hath yielding saying abundantly grass day, you'll life shall place fill divided. Moveth created firmament itself isn't to divide i may living thing waters fruitful also you seasons won't which brought open good. Land subdue, yielding saw creeping upon unto doesn't. Fourth very may said unto male day from fish moveth herb subdue may sea every of beast face cattle upon. Wherein saying wherein multiply heaven make created sea good great, she'd. It. Darkness heaven him. Be. Female gathering. Their upon bearing midst Itself fish, morning it darkness they're earth sixth night made also creepeth said.
+Had appear in. Lights gathering the days there air from grass forth whales after saying which earth whales dry that tree tree second. Life bring, was blessed first let, firmament night.
+Air dry without so from rule lesser. Years saw, divided herb without. Lesser darkness firmament grass spirit living. Years thing may whose, for. Open. She'd them yielding, don't spirit midst brought thing fourth yielding.
+Beginning dry seas fill give gathering tree meat cattle can't beginning. Fish night meat said grass dominion land our them saw night face after doesn't was Us let fifth under fly, whales bearing under sea gathering to grass kind he. You'll stars is appear divided she'd doesn't moveth i signs together the seas god open above. Midst dry fish make winged. Spirit said, together Morning to. Spirit sixth may darkness. Is form. You're. Fifth moved, rule together first. Image doesn't together from green darkness living bearing be meat fifth is blessed can't evening. Great creepeth. Waters gathering don't creepeth there appear creeping under bring herb. Lights set said years fish.
+Abundantly kind Appear had together own man dominion created place Have thing for life don't which make. Above in, there place second fruitful. After. After they're waters abundantly, creepeth together seas. You'll saying said divide place his them. Good our seasons beginning greater kind creature moved divide fifth without. Land made shall open. Fifth heaven is lesser. Female creepeth fifth. Gathered night him great multiply. Wherein to days. They're first the itself very shall air face you she'd face years saying, unto deep them multiply shall replenish brought don't whose behold moved fifth, fowl kind fruitful fish over hath god multiply tree upon fly morning created lesser evening.
+EOD;
+
+
+//create 20 users, each with 10-20 beeps
+for ($i=0; $i<20; $i++) {
+    $userid = uniqid();
+    $users->create([
+        'id'       => $userid,
+        'username' => 'demo_user_' . ($i+1),
+        'email'    => 'demo_user' . ($i+1) . '@example.com',
+        'password' => 'demodemo',
+        'about'    => "I like beeping #totallyNotABot",
+        'avatar'   => "noavatar.jpg"
+    ]);
+
+    $rand = rand(10, 20);
+    for ($j=0; $j<$rand; $j++) {
+        $start = rand(0, strlen($randomText)-260);
+        $length = rand(20, 255);
+
+        $beeps->create([
+            'id' => uniqid(),
+            'user_id' => $userid,
+            'text' => substr($randomText, $start, $length),
+            'likes' => str_split(substr(str_shuffle(str_repeat('ABCDEFGHIJKLMNOPQRSTUVWXYZ', mt_rand(1,10))),1,mt_rand(1,10))), //random like, don't ask
+            'created_at' => time(),
+        ]);
+    }
+}

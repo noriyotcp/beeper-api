@@ -1,0 +1,24 @@
+{
+    "name": "dejan7/beeper-api",
+    "description": "Simple REST API",
+    "type": "project",
+    "licence": "MIT",
+    "authors": [
+        {
+            "name": "Dejan Stosic",
+            "email": "dejanstosic7@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"BeeperApi\\": "src/"}
+    },
+    "require": {
+        "morris/microdb": "^0.1.0",
+        "firebase/php-jwt": "^4.0",
+        "rdlowrey/auryn": "^1.4",
+        "nikic/fast-route": "^1.0",
+        "vlucas/valitron": "^1.2",
+        "patricklouys/http": "^1.4",
+        "dejan7/httpquest": "0.3.0"
+    }
+}

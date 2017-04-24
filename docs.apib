@@ -1,0 +1,283 @@
+FORMAT: 1A
+HOST: http://localhost:XXXX
+
+# Beeper API
+Beeper is an imaginary microblogging platform, created for Udemy course
+
+## Authentication
+Beeper uses JWT (JSON Web Tokens) for authentication. For protected endpoints you'll need add the following HTTP header:
+
+```http
+Authorization: bearer {token-string}
+```
+
+where {token-string} is the actual JWT token you obtained beforehand. **Tokens are valid for 4 hours.**
+
+
+## Error Handling
+For all user level errors, Beeper API will return a HTTP response 422 with the following structure
+
+```javascript
+{
+    status: 422,
+    message: "Unprocessable Entity",
+    errors: ['Error 1', 'Error 2', ...]
+}
+```
+
+For example, if a user submits empty form during registration, API will return this message:
+
+```javascript
+{
+    code: 422
+    message:"Unprocessable Entity"
+    errors: ["Username is required", "Username must be between 3 and 30 characters", "Email is required",…]
+}
+```
+
+# Group Authentication
+
+## Auth Resource [/auth]
+
+### Login [POST]
+
+Returns JWT token on success that can be used to make authorized API requests
+
+**Request body parameters:**
+
++ username (string)
++ password (string)
+
++ Request
+
+        {
+            "username": "demo_user",
+            "password": "MyVoiceIsMyPassword"
+        }
+
++ Response 200 (application/json)
+
+        [
+            {
+                "token": "JWTdsf834.......",
+            }
+        ]
+
+# Group Users
+
+### Register/Create [POST /users]
+Create (register) a new user
+
+**Request body parameters:**
+
++ username (string)
++ email (string)
++ password (string)
+
++ Request
+
+        {
+            "username": "demo_user",
+            "email": "demo@example.com",
+            "password": "MyVoiceIsMyPassword"
+        }
+
++ Response 201 (application/json)
+
+
+### Get User Info [GET /users/{username}]
+Returns basic user info
+
++ Parameters
+    + username (string) - Can be either a username OR a special reserved keyword **me** - which can be used to retrieve info about currently logged in user. If '**me**' is used, proper Authorization header is required (See Authorization section above)
+
+
++ Response 200 (application/json)
+
+        {
+            "username": "demo_user_1",
+            "about": "I like beeping #totallyNotABot",
+            "avatar": "http://localhost:XXXX/public/images/noavatar.jpg"
+        }
+
+### Get User Beeps [GET /users/{username}/beeps{?page}]
+Returns paginated beeps created by the specified user
+
++ Parameters
+    + username (string) - Can be either a username OR a special reserved keyword **me** - which can be used to retrieve info about currently logged in user. If '**me**' is used, proper Authorization header is required (See Authorization section above)
+    + page: 2 (number, optional) - Which page to retrieve. Defaults to 1st
+
+
++ Response 200 (application/json)
+
+        {
+            "current_page": 1,
+            "last_page": 12,
+            "total": 180,
+            "data": [
+                {
+                    "id": "5803fbb753ae8",
+                    "user_id": "5803fbb753081",
+                    "created_at": 1476718879,
+                    "text": "Lorem ipsum dolor...",
+                    "likes": 23,
+                    "liked": false,
+                    "author": {
+                        "username": "demo_user_1",
+                        ...
+                    }
+                },
+                ...
+            ]
+        }
+
+### Update Settings [PUT /users/me]
+Update user's info. User is identified by secret token (JWT)
+
+**Request body parameters:**
+
++ username (string)
++ about (string)
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer JSONWebToken
+
+    + Body
+
+            {
+                "username": "not_a_demo_user",
+                "about": "I like long walks by the beach",
+            }
+
+
++ Response 200
+
+### Update Avatar [PUT /users/me/avatar]
+Update user's avatar. User is identified by secret token (JWT). Returns the location of new avatar in response body.
+
+**Request body parameters:**
+
++ avatar
+
++ Request (multipart/form-data)
+
+    + Headers
+
+            Authorization: Bearer JSONWebToken
+
+    + Body
+
+            {
+                "avatar": "...formdata content....",
+            }
+
+
++ Response 200
+
+        {
+            "avatar" : "http://localhost:XXXX/public/images/xyz.jpg"
+        }
+
+
+# Group Beeps
+
+### Get All Beeps [GET /beeps{?page}]
+Returns all existing beeps (paginated)
+
++ Parameters
+    + page: 2 (number, optional) - Which page to retrieve. Defaults to 1st
+
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer JSONWebToken
+
++ Response 200 (application/json)
+
+        {
+            "current_page": 1,
+            "last_page": 12,
+            "total": 180,
+            "data": [
+                {
+                    "id": "5803fbb753ae8",
+                    "user_id": "5803fbb753081",
+                    "created_at": 1476718879,
+                    "text": "Lorem ipsum dolor...",
+                    "likes": 23,
+                    "liked": false,
+                    "author": {
+                        "username": "demo_user_1",
+                        ...
+                    }
+                },
+                {
+                    "id": "6313fbb753ae8",
+                    "user_id": "2223fbb753081",
+                    "created_at": 1476718879,
+                    "text": "More lorem...",
+                    "likes": 44,
+                    "liked": true,
+                    "author": {
+                        "username": "demo_user_17",
+                        ...
+                    }
+                },
+                ...
+            ]
+        }
+
+### Create new Beep [POST /beeps]
+Publishes a new beep for the current user identified by JWT.
+
+**Request body parameters:**
+
++ text (string) - Between 3 and 320 characters (because we are 100% bigger than our competition!)
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer JSONWebToken
+
+    + Body
+
+            {
+                "text": "Hello world!",
+            }
+
++ Response 201 (application/json)
+
+        {
+		    "id": "5803fbb753ae8",
+		    "user_id": "5803fbb753081",
+		    "created_at": 1476718879,
+		    "text": "Lorem ipsum dolor...",
+		    "likes": 23,
+		    "liked": false,
+		    "author": {
+		        "username": "demo_user_1",
+		        ...
+		    }
+            
+        }
+
+
+### Like/Unlike a beep [PATCH /beeps/{id}/like]
+Toggles the "liked" state of the beep for the current user (identified by JWT)
+
++ Parameters
+    + id: 5803fbb753ae8 (string) - Beep ID
+
++ Request
+
+    + Headers
+
+            Authorization: Bearer JSONWebToken
+
++ Response 200
